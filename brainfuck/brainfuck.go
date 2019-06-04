@@ -4,7 +4,7 @@ import (
 	"io"
 )
 
-type BrainfuckInterpreter struct {
+type Interpreter struct {
 	code           []rune
 	pointer        int
 	openBrackets   []int
@@ -13,8 +13,8 @@ type BrainfuckInterpreter struct {
 	data           []rune
 }
 
-func NewBrainfuckInterpreter(code string) *BrainfuckInterpreter {
-	i := BrainfuckInterpreter{
+func NewInterpreter(code string) *Interpreter {
+	i := Interpreter{
 		code:           []rune(code),
 		pointer:        0,
 		openBrackets:   nil,
@@ -27,7 +27,7 @@ func NewBrainfuckInterpreter(code string) *BrainfuckInterpreter {
 	return &i
 }
 
-func (i *BrainfuckInterpreter) prepareCode() {
+func (i *Interpreter) prepareCode() {
 	counter := 0
 
 	// count occurences to initialize slice in correct size
@@ -62,7 +62,7 @@ func (i *BrainfuckInterpreter) prepareCode() {
 	}
 }
 
-func (i *BrainfuckInterpreter) Run(w io.Writer, r io.Reader) {
+func (i *Interpreter) Run(w io.Writer, r io.Reader) {
 	codePointer := 0
 	for codePointer < len(i.code) {
 		switch i.code[codePointer] {
@@ -102,36 +102,36 @@ func (i *BrainfuckInterpreter) Run(w io.Writer, r io.Reader) {
 	}
 }
 
-func (i *BrainfuckInterpreter) incrementData() {
+func (i *Interpreter) incrementData() {
 	i.setCurrentCell(i.getCurrentCell() + 1)
 }
 
-func (i *BrainfuckInterpreter) decrementData() {
+func (i *Interpreter) decrementData() {
 	i.setCurrentCell(i.getCurrentCell() - 1)
 }
 
-func (i *BrainfuckInterpreter) incrementPointer() {
+func (i *Interpreter) incrementPointer() {
 	i.pointer++
 	if i.pointer >= len(i.data) {
 		i.pointer = 0
 	}
 }
 
-func (i *BrainfuckInterpreter) decrementPointer() {
+func (i *Interpreter) decrementPointer() {
 	i.pointer--
 	if i.pointer < 0 {
 		i.pointer = len(i.data) - 1
 	}
 }
 
-func (i *BrainfuckInterpreter) write(w io.Writer) {
+func (i *Interpreter) write(w io.Writer) {
 	_, err := w.Write([]byte(string(i.getCurrentCell())))
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (i *BrainfuckInterpreter) read(r io.Reader) {
+func (i *Interpreter) read(r io.Reader) {
 	buff := make([]byte, 1)
 	n, err := r.Read(buff)
 	if err != nil {
@@ -143,10 +143,10 @@ func (i *BrainfuckInterpreter) read(r io.Reader) {
 	}
 }
 
-func (i *BrainfuckInterpreter) getCurrentCell() rune {
+func (i *Interpreter) getCurrentCell() rune {
 	return i.data[i.pointer]
 }
 
-func (i *BrainfuckInterpreter) setCurrentCell(newVal rune) {
+func (i *Interpreter) setCurrentCell(newVal rune) {
 	i.data[i.pointer] = newVal
 }

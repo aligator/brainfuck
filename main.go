@@ -19,21 +19,23 @@ func (StdWriter) Write(p []byte) (n int, err error) {
 type StdCharReader struct{}
 
 func (StdCharReader) Read(p []byte) (n int, err error) {
+	// shrink buffer to only one byte, as we only need one
+	p = p[0:1]
 	reader := os.Stdin
 
-	for {
-		n, err = reader.Read(p)
+	n, err = reader.Read(p)
+	if err != nil {
+		return
+	}
 
-		if err != nil {
-			break
-		}
-
-		if n > 0 {
-			p = p[0:1]
-
-			if int(p[0]) != 10 && int(p[0]) != 13 {
-				break
-			}
+	if n > 0 {
+		p = p[0:1]
+		// if first char is not newline: remove the next char as should be a newline
+		// if first char is already a newline, it is an intended user input
+		if int(p[0]) != 10 && int(p[0]) != 13 {
+			// remove newline from stdio-buffer
+			tmpBuff := make([]byte, 1)
+			reader.Read(tmpBuff)
 		}
 	}
 
@@ -50,6 +52,6 @@ func main() {
 		panic(err)
 	}
 
-	brfck := brainfuck.NewBrainfuckInterpreter(string(file))
+	brfck := brainfuck.NewInterpreter(string(file))
 	brfck.Run(StdWriter{}, StdCharReader{})
 }
