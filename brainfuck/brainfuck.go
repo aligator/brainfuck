@@ -135,7 +135,11 @@ func (i *Interpreter) read(r io.Reader) {
 	buff := make([]byte, 1)
 	n, err := r.Read(buff)
 	if err != nil {
-		panic(err)
+		if err == io.EOF {
+			buff[0] = 0
+		} else {
+			panic(err)
+		}
 	}
 
 	if n > 0 {
