@@ -39,6 +39,9 @@ func (StdCharReader) Read(p []byte) (n int, err error) {
 }
 
 func main() {
+	fmt.Println("Hello World example:")
+	fmt.Println()
+
 	brfck := brainfuck.NewBrainfuckInterpreter(">>>++++++++++" +
 		"[" +
 		">+++++++>++++++++++>+++>+<<<<-" +
@@ -58,6 +61,11 @@ func main() {
 		">.                      Zeilenvorschub" +
 		"+++.                    Wagenrücklauf")
 	brfck.Run(StdWriter{}, StdCharReader{})
+	fmt.Println()
+	fmt.Println()
+
+	fmt.Println("Echo example:")
+	fmt.Println()
 
 	// example which just echos out the input
 	brfck = brainfuck.NewBrainfuckInterpreter("+[>,.<]")
