@@ -10,11 +10,36 @@ import (
 type StdWriter struct{}
 
 func (StdWriter) Write(p []byte) (n int, err error) {
-	return fmt.Println(string(p))
+	return fmt.Print(string(p))
+}
+
+// a reader for readline which only reads one char and removes newlines
+type StdCharReader struct{}
+
+func (StdCharReader) Read(p []byte) (n int, err error) {
+	reader := os.Stdin
+
+	for {
+		n, err = reader.Read(p)
+
+		if err != nil {
+			break
+		}
+
+		if n > 0 {
+			p = p[0:1]
+
+			if int(p[0]) != 10 && int(p[0]) != 13 {
+				break
+			}
+		}
+	}
+
+	return
 }
 
 func main() {
-	brfck := brainfuck.NewBrainfuckInterpreter("++++++++++" +
+	brfck := brainfuck.NewBrainfuckInterpreter(">>>++++++++++" +
 		"[" +
 		">+++++++>++++++++++>+++>+<<<<-" +
 		"]   Schleife zur Vorbereitung der Textausgabe" +
@@ -32,5 +57,9 @@ func main() {
 		">+.                     '!'" +
 		">.                      Zeilenvorschub" +
 		"+++.                    Wagenrücklauf")
-	brfck.Run(StdWriter{}, os.Stdin)
+	brfck.Run(StdWriter{}, StdCharReader{})
+
+	// example which just echos out the input
+	brfck = brainfuck.NewBrainfuckInterpreter("+[>,.<]")
+	brfck.Run(StdWriter{}, StdCharReader{})
 }
