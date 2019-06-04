@@ -1,8 +1,10 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/aligator/brainfuck/brainfuck"
+	"io/ioutil"
 	"os"
 )
 
@@ -39,35 +41,15 @@ func (StdCharReader) Read(p []byte) (n int, err error) {
 }
 
 func main() {
-	fmt.Println("Hello World example:")
-	fmt.Println()
+	filePtr := flag.String("file", "", "a filename")
 
-	brfck := brainfuck.NewBrainfuckInterpreter(">>>++++++++++" +
-		"[" +
-		">+++++++>++++++++++>+++>+<<<<-" +
-		"]   Schleife zur Vorbereitung der Textausgabe" +
-		">++.                    Ausgabe von 'H'" +
-		">+.                     Ausgabe von 'e'" +
-		"+++++++.                'l'" +
-		".                       'l'" +
-		"+++.                    'o'" +
-		">++.                    Leerzeichen" +
-		"<<+++++++++++++++.      'W'" +
-		">.                      'o'" +
-		"+++.                    'r'" +
-		"------.                 'l'" +
-		"--------.               'd'" +
-		">+.                     '!'" +
-		">.                      Zeilenvorschub" +
-		"+++.                    Wagenrücklauf")
-	brfck.Run(StdWriter{}, StdCharReader{})
-	fmt.Println()
-	fmt.Println()
+	flag.Parse()
 
-	fmt.Println("Echo example:")
-	fmt.Println()
+	file, err := ioutil.ReadFile(*filePtr)
+	if err != nil {
+		panic(err)
+	}
 
-	// example which just echos out the input
-	brfck = brainfuck.NewBrainfuckInterpreter("+[>,.<]")
+	brfck := brainfuck.NewBrainfuckInterpreter(string(file))
 	brfck.Run(StdWriter{}, StdCharReader{})
 }
