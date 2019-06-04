@@ -13,7 +13,7 @@ func (StdWriter) Write(p []byte) (n int, err error) {
 	return fmt.Print(string(p))
 }
 
-// a reader for readline which only reads one char and removes newlines
+// a reader for stdin which only reads one char and removes newlines
 type StdCharReader struct{}
 
 func (StdCharReader) Read(p []byte) (n int, err error) {
