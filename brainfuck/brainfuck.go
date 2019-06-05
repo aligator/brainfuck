@@ -1,6 +1,7 @@
 package brainfuck
 
 import (
+	"github.com/pkg/errors"
 	"io"
 )
 
@@ -12,7 +13,7 @@ type Interpreter struct {
 	data           []byte
 }
 
-func NewInterpreter(code string) *Interpreter {
+func NewInterpreter(code string) (*Interpreter, error) {
 	i := Interpreter{
 		code:           []rune(code),
 		pointer:        0,
@@ -21,43 +22,38 @@ func NewInterpreter(code string) *Interpreter {
 		data:           make([]byte, 30000),
 	}
 
-	i.prepareCode()
-	return &i
+	err := i.prepareCode()
+	if err != nil {
+		return nil, err
+	}
+
+	return &i, nil
 }
 
-func (i *Interpreter) prepareCode() {
-	counter := 0
+func (i *Interpreter) prepareCode() error {
+	const noClosingBracket = "not all opening brackets have a closing bracket"
+	const noOpeningBracket = "there is a closing bracket before an opening bracket"
 
-	// count occurences to initialize slice in correct size
-	for _, cmd := range i.code {
+	i.openBrackets = []int{}
+	i.closedBrackets = []int{}
+
+	for codePos, cmd := range i.code {
 		if cmd == '[' {
-			counter++
-		}
-	}
-
-	i.openBrackets = make([]int, counter)
-	i.closedBrackets = make([]int, counter)
-
-	counter = 0
-	for pos, cmd := range i.code {
-		if cmd == '[' {
-			i.openBrackets[counter] = pos
-			loops := 1
-			loopPointer := pos
-
-			for loops > 0 {
-				loopPointer++
-				if i.code[loopPointer] == '[' {
-					loops++
-				}
-				if i.code[loopPointer] == ']' {
-					loops--
-				}
+			i.openBrackets = append(i.openBrackets, codePos)
+		} else if cmd == ']' {
+			if len(i.openBrackets) > len(i.closedBrackets) {
+				i.closedBrackets = append(i.closedBrackets, codePos)
+			} else {
+				return errors.New(noOpeningBracket)
 			}
-			i.closedBrackets[counter] = loopPointer
-			counter++
 		}
 	}
+
+	if len(i.openBrackets) != len(i.closedBrackets) {
+		return errors.New(noClosingBracket)
+	}
+
+	return nil
 }
 
 func (i *Interpreter) Run(w io.Writer, r io.Reader) {

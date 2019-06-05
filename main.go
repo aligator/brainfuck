@@ -52,6 +52,9 @@ func main() {
 		panic(err)
 	}
 
-	brfck := brainfuck.NewInterpreter(string(file))
+	brfck, err := brainfuck.NewInterpreter(string(file))
+	if err != nil {
+		panic(err)
+	}
 	brfck.Run(StdWriter{}, StdCharReader{})
 }
