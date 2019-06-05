@@ -36,7 +36,7 @@ func (suite *NewInterpreterTestSuit) SetupTest() {
 		{
 			code:           "[+[>,[.]<] [++++] []]",
 			openBrackets:   []int{0, 2, 5, 11, 18},
-			closedBrackets: []int{7, 9, 16, 19, 20},
+			closedBrackets: []int{20, 9, 7, 16, 19},
 		},
 		{code: "+[>,.<", errorMessage: notAllClosingErr},
 		{code: "+>,.<]", errorMessage: notAllOpeningErr},
@@ -65,8 +65,8 @@ func (suite *NewInterpreterTestSuit) TestNewInterpreterBracketsValidation() {
 			suite.EqualError(err, testCase.errorMessage, testCase)
 		} else {
 			suite.NoError(err, testCase.errorMessage, testCase)
-			suite.ElementsMatch(testCase.openBrackets, interpreter.openBrackets, testCase)
-			suite.ElementsMatch(testCase.closedBrackets, interpreter.closedBrackets, testCase)
+			suite.EqualValues(testCase.openBrackets, interpreter.openBrackets, testCase)
+			suite.EqualValues(testCase.closedBrackets, interpreter.closedBrackets, testCase)
 		}
 	}
 }
