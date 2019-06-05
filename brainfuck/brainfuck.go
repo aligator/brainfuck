@@ -9,8 +9,7 @@ type Interpreter struct {
 	pointer        int
 	openBrackets   []int
 	closedBrackets []int
-	input          rune
-	data           []rune
+	data           []byte
 }
 
 func NewInterpreter(code string) *Interpreter {
@@ -19,8 +18,7 @@ func NewInterpreter(code string) *Interpreter {
 		pointer:        0,
 		openBrackets:   nil,
 		closedBrackets: nil,
-		input:          ' ',
-		data:           make([]rune, 30000),
+		data:           make([]byte, 30000),
 	}
 
 	i.prepareCode()
@@ -97,7 +95,6 @@ func (i *Interpreter) Run(w io.Writer, r io.Reader) {
 			// jump back
 			codePointer = i.openBrackets[j] - 1
 		}
-
 		codePointer++
 	}
 }
@@ -125,7 +122,9 @@ func (i *Interpreter) decrementPointer() {
 }
 
 func (i *Interpreter) write(w io.Writer) {
-	_, err := w.Write([]byte(string(i.getCurrentCell())))
+	data := make([]byte, 1)
+	data[0] = i.getCurrentCell()
+	_, err := w.Write(data)
 	if err != nil {
 		panic(err)
 	}
@@ -135,22 +134,24 @@ func (i *Interpreter) read(r io.Reader) {
 	buff := make([]byte, 1)
 	n, err := r.Read(buff)
 	if err != nil {
-		if err == io.EOF {
-			buff[0] = 0
-		} else {
+		if err != io.EOF {
 			panic(err)
+		} else {
+			// Do nothing
+			// maybe add option to use 0 or \n (10) instead
+			// buff[0] = 0
 		}
 	}
 
 	if n > 0 {
-		i.setCurrentCell(rune(buff[0]))
+		i.setCurrentCell(buff[0])
 	}
 }
 
-func (i *Interpreter) getCurrentCell() rune {
+func (i *Interpreter) getCurrentCell() byte {
 	return i.data[i.pointer]
 }
 
-func (i *Interpreter) setCurrentCell(newVal rune) {
+func (i *Interpreter) setCurrentCell(newVal byte) {
 	i.data[i.pointer] = newVal
 }
