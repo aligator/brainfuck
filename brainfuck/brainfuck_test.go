@@ -38,6 +38,16 @@ func (suite *NewInterpreterTestSuit) SetupTest() {
 			openBrackets:   []int{0, 2, 5, 11, 18},
 			closedBrackets: []int{20, 9, 7, 16, 19},
 		},
+		{
+			code:           "[[[][[][]][[[]]]][[]][][]]",
+			openBrackets:   []int{0, 1, 2, 4, 5, 7, 10, 11, 12, 17, 18, 21, 23},
+			closedBrackets: []int{25, 16, 3, 9, 6, 8, 15, 14, 13, 20, 19, 22, 24},
+		},
+		{
+			code:           "[+.[]]>-[.-]",
+			openBrackets:   []int{0, 3, 8},
+			closedBrackets: []int{5, 4, 11},
+		},
 		{code: "+[>,.<", errorMessage: notAllClosingErr},
 		{code: "+>,.<]", errorMessage: notAllOpeningErr},
 		{code: "+[[>,.<]", errorMessage: notAllClosingErr},

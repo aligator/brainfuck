@@ -6,7 +6,7 @@ import (
 )
 
 type Interpreter struct {
-	code           []rune
+	code           string
 	pointer        int
 	openBrackets   []int
 	closedBrackets []int
@@ -15,7 +15,7 @@ type Interpreter struct {
 
 func NewInterpreter(code string) (*Interpreter, error) {
 	i := Interpreter{
-		code:           []rune(code),
+		code:           code,
 		pointer:        0,
 		openBrackets:   nil,
 		closedBrackets: nil,
@@ -37,19 +37,25 @@ func (i *Interpreter) prepareCode() error {
 	i.openBrackets = []int{}
 	i.closedBrackets = []int{}
 
+	var bracketStack []int
+
 	for codePos, cmd := range i.code {
 		if cmd == '[' {
+			bracketStack = append(bracketStack, len(i.openBrackets))
 			i.openBrackets = append(i.openBrackets, codePos)
+			i.closedBrackets = append(i.closedBrackets, -1) // -1: dummy
 		} else if cmd == ']' {
-			if len(i.openBrackets) > len(i.closedBrackets) {
-				i.closedBrackets = append(i.closedBrackets, codePos)
-			} else {
+			if len(bracketStack) == 0 {
 				return errors.New(noOpeningBracket)
 			}
+
+			lastOpen := bracketStack[len(bracketStack)-1]
+			i.closedBrackets[lastOpen] = codePos
+			bracketStack = bracketStack[:len(bracketStack)-1]
 		}
 	}
 
-	if len(i.openBrackets) != len(i.closedBrackets) {
+	if len(bracketStack) != 0 {
 		return errors.New(noClosingBracket)
 	}
 
@@ -59,6 +65,8 @@ func (i *Interpreter) prepareCode() error {
 func (i *Interpreter) Run(w io.Writer, r io.Reader) {
 	codePointer := 0
 	for codePointer < len(i.code) {
+		//fmt.Println(codePointer, "----- ", string(i.code[codePointer]), "data:", i.getCurrentCell(), string(i.getCurrentCell()), "pointer", i.pointer)
+		//time.Sleep(time.Second / 20)
 		switch i.code[codePointer] {
 		case '>':
 			i.incrementPointer()
@@ -74,7 +82,7 @@ func (i *Interpreter) Run(w io.Writer, r io.Reader) {
 			i.read(r)
 		case '[':
 			if i.getCurrentCell() == 0 {
-				// count brackets except current pos
+				// count brackets until current pos
 				j := 0
 				for i.openBrackets[j] != codePointer {
 					j++
@@ -83,7 +91,7 @@ func (i *Interpreter) Run(w io.Writer, r io.Reader) {
 				codePointer = i.closedBrackets[j]
 			}
 		case ']':
-			// count brackets except current pos
+			// count brackets until current pos
 			j := 0
 			for i.closedBrackets[j] != codePointer {
 				j++
