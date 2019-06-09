@@ -64,7 +64,7 @@ func (suite *NewInterpreterTestSuite) TestNewInterpreter() {
 	suite.Nil(err)
 
 	suite.Equal(1, len(interpreter.closedBrackets))
-	suite.Equal(1, len(interpreter.closedBrackets))
+	suite.Equal(1, len(interpreter.openBrackets))
 	suite.Equal(suite.testCode, string(interpreter.code))
 	suite.Equal(0, interpreter.pointer)
 	suite.Greater(len(interpreter.data), 0)
