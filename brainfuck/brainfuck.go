@@ -65,8 +65,6 @@ func (i *Interpreter) prepareCode() error {
 func (i *Interpreter) Run(w io.Writer, r io.Reader) {
 	codePointer := 0
 	for codePointer < len(i.code) {
-		//fmt.Println(codePointer, "----- ", string(i.code[codePointer]), "data:", i.getCurrentCell(), string(i.getCurrentCell()), "pointer", i.pointer)
-		//time.Sleep(time.Second / 20)
 		switch i.code[codePointer] {
 		case '>':
 			i.incrementPointer()

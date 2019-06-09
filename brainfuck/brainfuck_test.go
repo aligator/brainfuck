@@ -1,18 +1,20 @@
 package brainfuck
 
 import (
+	"bufio"
+	"bytes"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
 
-type NewInterpreterTestSuit struct {
+type NewInterpreterTestSuite struct {
 	suite.Suite
 	testCode          string
 	bracketsTestCases []bracketTestCases
 }
 
-func TestNewInterpreterTestSuit(t *testing.T) {
-	suite.Run(t, new(NewInterpreterTestSuit))
+func TestNewInterpreterTestSuite(t *testing.T) {
+	suite.Run(t, new(NewInterpreterTestSuite))
 }
 
 type bracketTestCases struct {
@@ -22,7 +24,7 @@ type bracketTestCases struct {
 	closedBrackets []int
 }
 
-func (suite *NewInterpreterTestSuit) SetupTest() {
+func (suite *NewInterpreterTestSuite) SetupTest() {
 	const notAllClosingErr = "not all opening brackets have a closing bracket"
 	const notAllOpeningErr = "there is a closing bracket before an opening bracket"
 
@@ -57,7 +59,7 @@ func (suite *NewInterpreterTestSuit) SetupTest() {
 	}
 }
 
-func (suite *NewInterpreterTestSuit) TestNewInterpreter() {
+func (suite *NewInterpreterTestSuite) TestNewInterpreter() {
 	interpreter, err := NewInterpreter(suite.testCode)
 	suite.Nil(err)
 
@@ -68,7 +70,7 @@ func (suite *NewInterpreterTestSuit) TestNewInterpreter() {
 	suite.Greater(len(interpreter.data), 0)
 }
 
-func (suite *NewInterpreterTestSuit) TestNewInterpreterBracketsValidation() {
+func (suite *NewInterpreterTestSuite) TestNewInterpreterBracketsValidation() {
 	for _, testCase := range suite.bracketsTestCases {
 		interpreter, err := NewInterpreter(testCase.code)
 		if testCase.errorMessage != "" {
@@ -79,4 +81,93 @@ func (suite *NewInterpreterTestSuit) TestNewInterpreterBracketsValidation() {
 			suite.EqualValues(testCase.closedBrackets, interpreter.closedBrackets, testCase)
 		}
 	}
+}
+
+type OperatorTestSuite struct {
+	suite.Suite
+}
+
+func TestOperatorSuite(t *testing.T) {
+	suite.Run(t, new(OperatorTestSuite))
+}
+
+func (suite *OperatorTestSuite) TestPlus() {
+	interpreter, err := NewInterpreter("+++++.")
+	suite.Nil(err)
+
+	var buffer bytes.Buffer
+	resultWriter := bufio.NewWriter(&buffer)
+	interpreter.Run(resultWriter, nil)
+
+	resultWriter.Flush()
+	output := buffer.Bytes()
+	suite.EqualValues(5, output[0])
+}
+
+func (suite *OperatorTestSuite) TestMinus() {
+	interpreter, err := NewInterpreter("-----.")
+	suite.Nil(err)
+
+	var buffer bytes.Buffer
+	resultWriter := bufio.NewWriter(&buffer)
+	interpreter.Run(resultWriter, nil)
+
+	resultWriter.Flush()
+	output := buffer.Bytes()
+	suite.EqualValues(251, output[0])
+}
+
+func (suite *OperatorTestSuite) TestPlusAndMinus() {
+	interpreter, err := NewInterpreter("+++++.-----.+++++---.+---.-----.++.")
+	suite.Nil(err)
+
+	var buffer bytes.Buffer
+	resultWriter := bufio.NewWriter(&buffer)
+	interpreter.Run(resultWriter, nil)
+
+	resultWriter.Flush()
+	output := buffer.Bytes()
+	suite.EqualValues(5, output[0])
+	suite.EqualValues(0, output[1])
+	suite.EqualValues(2, output[2])
+	suite.EqualValues(0, output[3])
+	suite.EqualValues(251, output[4])
+	suite.EqualValues(253, output[5])
+}
+
+func (suite *OperatorTestSuite) TestForward() {
+	interpreter, err := NewInterpreter(">>>>>>>>>>")
+	suite.Nil(err)
+
+	interpreter.Run(nil, nil)
+
+	suite.EqualValues(10, interpreter.pointer)
+}
+
+func (suite *OperatorTestSuite) TestBackward() {
+	interpreter, err := NewInterpreter("<<<<<<<<<<")
+	suite.Nil(err)
+
+	interpreter.Run(nil, nil)
+
+	suite.EqualValues(len(interpreter.data)-10, interpreter.pointer)
+}
+
+func (suite *OperatorTestSuite) TestForwardAndBackward() {
+	interpreter, err := NewInterpreter(">+>++>+++>++++>+++++>++++++>+++++++>++++++++>+++++++++>++++++++++" + // setup cells with numbers from 0-10
+		"<<<<<<<<<<.>>>>><<.>>>>>>>.<<<<<<<<<<.<<<<<>>>")
+	suite.Nil(err)
+
+	var buffer bytes.Buffer
+	resultWriter := bufio.NewWriter(&buffer)
+	interpreter.Run(resultWriter, nil)
+
+	resultWriter.Flush()
+	output := buffer.Bytes()
+
+	suite.EqualValues(0, output[0])
+	suite.EqualValues(3, output[1])
+	suite.EqualValues(10, output[2])
+	suite.EqualValues(0, output[3])
+	suite.EqualValues(len(interpreter.data)-2, interpreter.pointer) //check last position
 }
