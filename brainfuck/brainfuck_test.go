@@ -171,3 +171,21 @@ func (suite *OperatorTestSuite) TestForwardAndBackward() {
 	suite.EqualValues(0, output[3])
 	suite.EqualValues(len(interpreter.data)-2, interpreter.pointer) //check last position
 }
+
+func (suite *OperatorTestSuite) TestInputOutput() {
+	interpreter, err := NewInterpreter(",.>-,+.>,-..>,,.")
+	suite.Nil(err)
+
+	inputReader := bytes.NewReader([]byte("5a" + string(byte(1)) + "fl"))
+	var buffer bytes.Buffer
+	resultWriter := bufio.NewWriter(&buffer)
+	interpreter.Run(resultWriter, inputReader)
+
+	resultWriter.Flush()
+	output := buffer.Bytes()
+	suite.EqualValues(byte('5'), output[0])
+	suite.EqualValues(byte('b'), output[1])
+	suite.EqualValues(byte(0), output[2])
+	suite.EqualValues(byte(0), output[3])
+	suite.EqualValues(byte('l'), output[4])
+}
